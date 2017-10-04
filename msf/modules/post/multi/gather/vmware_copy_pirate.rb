@@ -15,15 +15,19 @@ class MetasploitModule < Msf::Post
         works regardless of whether VMware tools is installed on the guests or not.
         Ctl-C the module to terminate collection. TODO: change that behavior.
       },
-      'Author'        => ['Abul-Aziz Hariri',            # Discovery & initial PoC
-                          'Joshua Smith (kernelsmith)'], # MSF module
+      'Author'        =>  [
+                            'Abul-Aziz Hariri',          # Discovery & initial PoC
+                            'Joshua Smith (kernelsmith)' # MSF module
+                          ],
       'License'       => MSF_LICENSE,
-      'Platform'      => %w| linux osx win |,
+      'Platform'      => %w| win |, # TODO should be |linux osx win| once vmware
+                                    # lib is no longer Win Meterp dependent
       'SessionTypes'  => [ 'meterpreter' ]
     ))
     register_options([
-      OptBool.new('ASM_DEBUG', [false, 'Insert int 3 breakpoints at various locations', false]),
-      OptInt.new('INTERVAL', [true, 'Time to wait, in seconds, between queries for the copy buffer', 1]),
+      OptBool.new('ASM_DEBUG', [false, 'Insert `int 3` breakpoints at various locations', false]),
+      OptFloat.new('DELAY', [true, 'Time to wait, in seconds, between queries' +
+        ' for the copy buffer. NOTE: this speeds memory leak', 1.0]),
     ], self.class)
   end
 
@@ -56,6 +60,9 @@ class MetasploitModule < Msf::Post
     # TODO:
     # bp = Vmware::Backdoor::BackdoorProto.new
 
+    delay = datastore["DELAY"]
+    # guard against bad values
+    delay = 0.25 if delay <= 0.0
     @buffers = []
     begin
       while true
@@ -73,7 +80,7 @@ class MetasploitModule < Msf::Post
           #vprint_status("Nothing available in the copy buffer")
           nil
         end
-        sleep 1
+        sleep delay
       end
     rescue Interrupt
       print_status("Caught keyboard interrupt, shutting down")
