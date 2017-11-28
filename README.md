@@ -1,5 +1,7 @@
 # DerbyCon 2017 Presentation VMware Escapology: How to Houdini the Hypervisor
 
+A video of the presentation is available [here](https://www.youtube.com/watch?v=uRemWLNBSZg)
+
 ### Experimental Metasploit Framework Code
  
   ## WARNING
